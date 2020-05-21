@@ -14,23 +14,32 @@ class Product:
 
 
 class Category:
-    code = "NOT CODE"
-    name = "NOT NAME"
+    __code = ''
+    __name = ''
     product_list = []
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
-            if key == 'parent_group_code':
-                self.code = value
-            elif key == 'parent_group_name':
-                self.name = value
+            if key in ('parent_group_code', 'group_code'):
+                self.__code = value
+            elif key == ('parent_group_name', 'group_name'):
+                self.__name = value
             else:
-                setattr(self, key, value)
+                setattr(self, f'_{key}', value)
+
+    @property
+    def code(self):
+        return self.__code
+
+    @property
+    def name(self):
+        return self.__name
 
 
 class CatalogParser:
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 YaBrowser/20.4.3.145 (beta) Yowser/2.5 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/81.0.4044.138 YaBrowser/20.4.3.145 (beta) Yowser/2.5 Safari/537.36'
     }
 
     def __init__(self, start_url, category_list_url=''):
