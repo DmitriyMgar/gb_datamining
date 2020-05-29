@@ -13,6 +13,7 @@ class Product:
         return self.name
 
 
+# TODO: make hierarchical catalog structure
 class Category:
     __code = ''
     __name = ''
