@@ -2,6 +2,7 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.settings import Settings
 from gb_parse import settings
 from gb_parse.spiders.gb_blog import GbBlogSpider
+from gb_parse.spiders.avito import AvitoSpider
 
 if __name__ == '__main__':
     crawl_settings = Settings()
