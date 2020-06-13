@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
+from scrapy.loader import ItemLoader
+from gb_parse.items import GbParseItem
 
 
 class GbBlogSpider(scrapy.Spider):
@@ -7,8 +9,20 @@ class GbBlogSpider(scrapy.Spider):
     allowed_domains = ['geekbrains.ru']
     start_urls = ['http://geekbrains.ru/posts']
 
+    xpth_str = {
+        'title': '//h1[contains(@class, "blogpost-title")]/text()',
+        'pub_date': '//article//time/@datetime',
+        'text_content': '//article/div[contains(@class, "blogpost-content")]//text()',
+        'author_url': '//article//div[@itemprop="author"]/../@href',
+        'author_name': '//article//div[@itemprop="author"]/../div[@itemprop="author"]/text()',
+    }
+
+    css_str = {
+        'images': ".blogpost-content img::attr('src')"
+    }
+
     def parse(self, response):
-        print(1)
+        print(f'processing: {response.url}')
         pagination = response.xpath('//ul[contains(@class, "gb__pagination")]/li/a/@href')
         # yield response.follow_all(pagination, callback=self.parse())
         for link in pagination:
@@ -20,15 +34,18 @@ class GbBlogSpider(scrapy.Spider):
         )
         for url in posts:
             yield response.follow(url, callback=self.post_parse)
-        print(1)
 
     def post_parse(self, response):
-        title = response.xpath('//h1[contains(@class, "blogpost-title")]/text()').extract_first()
-        pub_date = response.xpath('//article//time/@datetime').extract_first()
-        text_content = response.xpath('//article/div[contains(@class, "blogpost-content")]//text()').extract()
-        author_selector = response.xpath('//article//div[@itemprop="author"]/..')[0]
-        author_url = author_selector.xpath('@href').extract_first()
-        author_name = author_selector.xpath('div[@itemprop="author"]/text()').extract_first()
-        print(1)
+        item = ItemLoader(GbParseItem(), response)
+
+        item.add_value('url', response.url)
+
+        for key, value in self.xpth_str.items():
+            item.add_xpath(key, value)
+
+        for key, value in self.css_str.items():
+            item.add_css(key, value)
+
+        yield item.load_item()
 
 
